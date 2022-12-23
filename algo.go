@@ -69,6 +69,14 @@ func Algo(children []Coords, gifts []Gift) Request {
 			children = children[:len(children)-1]
 			count--
 		}
+
+		if len(gifts) != 0 {
+			zero := Coords{
+				X: 0,
+				Y: 0,
+			}
+			res.Moves = append(res.Moves, zero)
+		}
 	}
 
 	return res
