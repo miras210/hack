@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -21,9 +22,6 @@ func main() {
 	json.Unmarshal(byteVal, &input)
 
 	res := Algo(input.Children, input.Gifts)
-	/*fmt.Println(len(input.Children))
-	fmt.Println(len(res.Moves))
-	fmt.Println(res.StackOfBags)*/
 	b, err := json.Marshal(res)
 	if err != nil {
 		panic(err)
@@ -45,4 +43,24 @@ func main() {
 	var response Resp
 	json.NewDecoder(resp.Body).Decode(response)
 	fmt.Println(response)
+
+	moves, err := json.Marshal(res)
+	if err != nil {
+		panic(err)
+	}
+
+	fe, err := os.Create("./visual/moves.json")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer fe.Close()
+
+	_, err2 := fe.Write(moves)
+
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
 }

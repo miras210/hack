@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visual</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #mapCanvas {
+
+        }
+    </style>
+    <script type="text/javascript" src="map.json"></script>
+</head>
+<body>
+<canvas id="mapCanvas">
+
+</canvas>
+
+<script>
+    let canvas = document.getElementById("mapCanvas");
+
+    changeSize();
+
+    var mapData = null, movesData = null, mult = 1;
+
+    fetch("./map.json")
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (data) {
+            console.log(data);
+            mapData = data;
+            drawMap();
+        })
+
+    window.onresize = function(event) {
+        // changeSize();
+    };
+
+    function changeSize() {
+        canvas.width  = 1920;
+        canvas.height = 1080;
+
+        console.log(window.innerWidth + " " + window.innerHeight)
+    }
+
+    function readMoves() {
+        fetch("./moves.json")
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                console.log(data);
+                movesData = data;
+                drawMoves();
+            })
+    }
+
+    function drawMoves() {
+        var ctx = canvas.getContext("2d");
+
+        let moves = movesData.moves
+
+        let bags = movesData.stackOfBags
+
+        let sum = 0
+
+        for (let i = 0; i < bags.length; i++) {
+            sum += bags[i].length
+        }
+
+        console.log("Sum: " + sum)
+
+        var posX = 0, posY = 0
+
+
+
+        for (let i = 0; i < moves.length; i++) {
+
+
+            let mv = moves[i]
+            ctx.moveTo(posX,posY);
+            posX = mv.x * mult
+            posY = mv.y * mult
+            ctx.lineTo(posX,posY);
+            ctx.strokeStyle = "#1ce00f"
+            ctx.stroke();
+
+            ctx.strokeStyle = "#0f32e0"
+
+            ctx.fillRect(posX, posY,5,5);
+        }
+    }
+
+    function drawMap() {
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#FF0000";
+        let children = mapData.children
+        let snows = mapData.snowAreas
+
+        let maxX = 0, maxY = 0,
+            minX = 0, minY = 0;
+
+        for (let i = 0; i < children.length; i++) {
+            let ch = children[i]
+            if (ch.x > maxX) maxX = ch.x;
+            if (ch.y > maxY) maxY = ch.y;
+            if (ch.x < minX) minX = ch.x;
+            if (ch.y < minY) minY = ch.y;
+        }
+
+        for (let i = 0; i < snows.length; i++) {
+            let ch = snows[i]
+            if (ch.x > maxX) maxX = ch.x;
+            if (ch.y > maxY) maxY = ch.y;
+            if (ch.x < minX) minX = ch.x;
+            if (ch.y < minY) minY = ch.y;
+        }
+
+        let xMultiplier = canvas.width / (maxX - minX)
+        let yMultiplier = canvas.height / (maxY - minY)
+
+        mult = Math.min(xMultiplier, yMultiplier)
+
+        console.log(xMultiplier + " - " + yMultiplier)
+
+
+
+        for (let i = 0; i < children.length; i++) {
+            let ch = children[i]
+            ctx.fillRect(ch.x * mult, ch.y * mult,3,3);
+        }
+        ctx.strokeStyle = '#1237be';
+        for (let i = 0; i < snows.length; i++) {
+            let s = snows[i]
+            ctx.beginPath();
+            ctx.arc(s.x * mult, s.y * mult, s.r * mult, 0, 2 * Math.PI);
+            ctx.fillStyle = "#26d0cd"
+            // ctx.fill()
+
+            ctx.stroke();
+        }
+
+        readMoves();
+
+
+    }
+</script>
+</body>
+</html>
