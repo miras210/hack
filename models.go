@@ -15,7 +15,7 @@ type Gift struct {
 type SnowArea struct {
 	R int `json:"r"`
 	X int `json:"x"`
-	Z int `json:"z"`
+	Y int `json:"y"`
 }
 
 type Coords struct {

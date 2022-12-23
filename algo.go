@@ -1,6 +1,8 @@
 package main
 
-import "math"
+import (
+	"math"
+)
 
 type Bag struct {
 	Gifts  []Gift
@@ -9,9 +11,9 @@ type Bag struct {
 }
 
 func (b *Bag) Result() []int {
-	res := make([]int, len(b.Gifts))
+	res := make([]int, 0, len(b.Gifts))
 	for i := 0; i < len(b.Gifts); i++ {
-		res[i] = b.Gifts[i].ID
+		res = append(res, b.Gifts[len(b.Gifts)-i-1].ID)
 	}
 	return res
 }
@@ -28,15 +30,13 @@ func (b *Bag) Add(gift Gift) bool {
 	return true
 }
 func (b *Bag) AddMax(gifts []Gift) int {
-	for i := len(gifts) - 1; i >= 0; i-- {
+	for i := 0; i < len(gifts); i++ {
 		if !b.Add(gifts[i]) {
-			return i + 1
+			return i
 		}
 	}
-	return 0
+	return len(gifts)
 }
-
-const bagSize = 15
 
 func Algo(children []Coords, gifts []Gift) Request {
 	res := Request{
@@ -45,16 +45,16 @@ func Algo(children []Coords, gifts []Gift) Request {
 		StackOfBags: make([][]int, 0),
 	}
 
-	for i := 0; i < len(gifts); i += bagSize {
+	for len(gifts) > 0 {
 		currx, curry := 0, 0
 		bag := Bag{
 			Gifts:  make([]Gift, 0),
 			Weight: 0,
 			Volume: 0,
 		}
-		for j := i; j < i+bagSize && j < len(gifts); j++ {
-			bag.Add(gifts[j])
-		}
+		i := bag.AddMax(gifts)
+		gifts = gifts[i:]
+
 		res.StackOfBags = append(res.StackOfBags, bag.Result())
 
 		count := len(bag.Gifts)
