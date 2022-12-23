@@ -22,6 +22,9 @@ func main() {
 
 	request := Algo(input.Children, input.Gifts)
 
+	fmt.Println(len(input.Children))
+	fmt.Println(len(request.Moves))
+	fmt.Println(request.StackOfBags)
 	body, err := json.Marshal(request)
 	if err != nil {
 		panic(err)

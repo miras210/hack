@@ -1,6 +1,8 @@
 package main
 
-import "math"
+import (
+	"math"
+)
 
 type Bag struct {
 	Gifts  []Gift
@@ -19,10 +21,10 @@ func (b *Bag) Result() []int {
 }
 
 func (b *Bag) Add(gift Gift) bool {
-	if b.Weight+gift.Weight > 200 {
+	if b.Weight+gift.Weight >= 200 {
 		return false
 	}
-	if b.Volume+gift.Volume > 100 {
+	if b.Volume+gift.Volume >= 100 {
 		return false
 	}
 	b.Gifts = append(b.Gifts, gift)
@@ -38,7 +40,7 @@ func (b *Bag) AddMax(gifts []Gift) int {
 		}
 	}
 
-	return 0
+	return len(gifts)
 }
 
 const bagSize = 10
