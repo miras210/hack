@@ -21,33 +21,38 @@ func main() {
 	var input Response
 	json.Unmarshal(byteVal, &input)
 
-	res := Algo(input.Children, input.Gifts)
-	b, err := json.Marshal(res)
+	request := Algo(input.Children, input.Gifts)
+
+	fmt.Println(len(input.Children))
+	fmt.Println(len(request.Moves))
+	fmt.Println(request.StackOfBags)
+	body, err := json.Marshal(request)
 	if err != nil {
 		panic(err)
 	}
-	bodyReader := bytes.NewReader(b)
 
-	req, err := http.NewRequest(http.MethodPost, "https://datsanta.dats.team/api/round", bodyReader)
+	url := "https://datsanta.dats.team/api/round"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}
 	req.Header.Set("X-API-Key", "92810ac8-2890-4b01-9379-151be16fbbee")
+	req.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		// Обработка ошибки
-		return
+		panic(err)
 	}
 	defer resp.Body.Close()
-	var response Resp
-	json.NewDecoder(resp.Body).Decode(response)
-	fmt.Println(response)
 
-	moves, err := json.Marshal(res)
+	body, err = io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
+
+	//print body in strings
+	fmt.Println(string(body))
 
 	fe, err := os.Create("./visual/moves.json")
 
@@ -57,7 +62,7 @@ func main() {
 
 	defer fe.Close()
 
-	_, err2 := fe.Write(moves)
+	_, err2 := fe.Write(body)
 
 	if err2 != nil {
 		log.Fatal(err2)
