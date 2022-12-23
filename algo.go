@@ -41,6 +41,8 @@ func (b *Bag) AddMax(gifts []Gift) int {
 	return 0
 }
 
+const bagSize = 10
+
 func Algo(children []Coords, gifts []Gift) Request {
 	res := Request{
 		MapID:       "faf7ef78-41b3-4a36-8423-688a61929c08",
@@ -48,16 +50,16 @@ func Algo(children []Coords, gifts []Gift) Request {
 		StackOfBags: make([][]int, 0),
 	}
 
-	for len(gifts) != 0 {
+	for i := 0; i < len(gifts); i += bagSize {
 		currx, curry := 0, 0
 		bag := Bag{
 			Gifts:  make([]Gift, 0),
 			Weight: 0,
 			Volume: 0,
 		}
-
-		idx := bag.AddMax(gifts)
-		gifts = gifts[:idx]
+		for j := i; j < i+bagSize && j < len(gifts); j++ {
+			bag.Add(gifts[j])
+		}
 		res.StackOfBags = append(res.StackOfBags, bag.Result())
 
 		count := len(bag.Gifts)
