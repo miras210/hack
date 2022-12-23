@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -52,4 +53,19 @@ func main() {
 
 	//print body in strings
 	fmt.Println(string(body))
+
+	fe, err := os.Create("./visual/moves.json")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer fe.Close()
+
+	_, err2 := fe.Write(body)
+
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
 }
