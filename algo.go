@@ -32,9 +32,9 @@ func (b *Bag) Add(gift Gift) bool {
 }
 
 func (b *Bag) AddMax(gifts []Gift) int {
-	for i := len(gifts) - 1; i >= 0; i-- {
+	for i := 0; i < len(gifts); i++ {
 		if !b.Add(gifts[i]) {
-			return i + 1
+			return i
 		}
 	}
 
@@ -50,16 +50,15 @@ func Algo(children []Coords, gifts []Gift) Request {
 		StackOfBags: make([][]int, 0),
 	}
 
-	for i := 0; i < len(gifts); i += bagSize {
+	for len(gifts) != 0 {
 		currx, curry := 0, 0
 		bag := Bag{
 			Gifts:  make([]Gift, 0),
 			Weight: 0,
 			Volume: 0,
 		}
-		for j := i; j < i+bagSize && j < len(gifts); j++ {
-			bag.Add(gifts[j])
-		}
+		i := bag.AddMax(gifts)
+		gifts = gifts[i:]
 		res.StackOfBags = append(res.StackOfBags, bag.Result())
 
 		count := len(bag.Gifts)
