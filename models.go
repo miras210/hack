@@ -28,3 +28,9 @@ type Request struct {
 	Moves       []Coords `json:"moves"`
 	StackOfBags [][]int  `json:"stackOfBags"`
 }
+
+type Resp struct {
+	Success bool   `json:"success"`
+	Error   string `json:"error"`
+	RoundID string `json:"roundId"`
+}

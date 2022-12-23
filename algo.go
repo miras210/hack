@@ -64,6 +64,7 @@ func Algo(children []Coords, gifts []Gift) Request {
 
 		for count != 0 {
 			idx := Closest(children, currx, curry)
+			currx, curry = children[idx].X, children[idx].Y
 			res.Moves = append(res.Moves, children[idx])
 			children[idx] = children[len(children)-1]
 			children = children[:len(children)-1]

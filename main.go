@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -19,10 +21,10 @@ func main() {
 	json.Unmarshal(byteVal, &input)
 
 	res := Algo(input.Children, input.Gifts)
-	fmt.Println(len(input.Children))
+	/*fmt.Println(len(input.Children))
 	fmt.Println(len(res.Moves))
-	fmt.Println(res.StackOfBags)
-	/*b, err := json.Marshal(res)
+	fmt.Println(res.StackOfBags)*/
+	b, err := json.Marshal(res)
 	if err != nil {
 		panic(err)
 	}
@@ -39,5 +41,8 @@ func main() {
 		// Обработка ошибки
 		return
 	}
-	defer resp.Body.Close()*/
+	defer resp.Body.Close()
+	var response Resp
+	json.NewDecoder(resp.Body).Decode(response)
+	fmt.Println(response)
 }
