@@ -36,6 +36,7 @@ func main() {
 	//CHANGEABLE BLOCK
 
 	solverImpl =
+		//&a_star_pathfinding_amiran.AStarPathfindingSolver{}
 		//&greedy_amiran.GreedyAmiranSolver{SnowAreas: input.SnowAreas}
 		&greedy_miras.GreedyMirasSolver{}
 
