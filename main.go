@@ -23,6 +23,10 @@ func main() {
 
 	request := Algo(input.Children, input.Gifts)
 
+	for i, j := 0, len(request.StackOfBags)-1; i < j; i, j = i+1, j-1 {
+		request.StackOfBags[i], request.StackOfBags[j] = request.StackOfBags[j], request.StackOfBags[i]
+	}
+
 	fmt.Println(len(input.Children))
 	fmt.Println(len(request.Moves))
 	fmt.Println(request.StackOfBags)
@@ -46,13 +50,13 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	body, err = io.ReadAll(resp.Body)
+	respbody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
 
 	//print body in strings
-	fmt.Println(string(body))
+	fmt.Println(string(respbody))
 
 	fe, err := os.Create("./visual/moves.json")
 
