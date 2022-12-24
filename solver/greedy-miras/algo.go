@@ -2,6 +2,7 @@ package greedy_miras
 
 import (
 	"hackathon/models"
+	"hackathon/solver"
 	"math"
 )
 
@@ -43,7 +44,7 @@ func (b *Bag) AddMax(gifts []models.Gift) int {
 
 func (g *GreedyMirasSolver) Algo(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
 	res := models.Request{
-		MapID:       "faf7ef78-41b3-4a36-8423-688a61929c08",
+		MapID:       solver.MapID,
 		Moves:       make([]models.Coords, 0, len(children)),
 		StackOfBags: make([][]int, 0),
 	}
