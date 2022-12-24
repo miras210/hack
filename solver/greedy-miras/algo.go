@@ -1,11 +1,14 @@
-package main
+package greedy_miras
 
 import (
+	"hackathon/models"
 	"math"
 )
 
+type GreedyMirasSolver struct{}
+
 type Bag struct {
-	Gifts  []Gift
+	Gifts  []models.Gift
 	Weight int
 	Volume int
 }
@@ -17,7 +20,7 @@ func (b *Bag) Result() []int {
 	}
 	return res
 }
-func (b *Bag) Add(gift Gift) bool {
+func (b *Bag) Add(gift models.Gift) bool {
 	if b.Weight+gift.Weight > 200 {
 		return false
 	}
@@ -29,7 +32,7 @@ func (b *Bag) Add(gift Gift) bool {
 	b.Volume += gift.Volume
 	return true
 }
-func (b *Bag) AddMax(gifts []Gift) int {
+func (b *Bag) AddMax(gifts []models.Gift) int {
 	for i := 0; i < len(gifts); i++ {
 		if !b.Add(gifts[i]) {
 			return i
@@ -38,17 +41,17 @@ func (b *Bag) AddMax(gifts []Gift) int {
 	return len(gifts)
 }
 
-func Algo(children []Coords, gifts []Gift) Request {
-	res := Request{
+func (g *GreedyMirasSolver) Algo(children []models.Coords, gifts []models.Gift) models.Request {
+	res := models.Request{
 		MapID:       "faf7ef78-41b3-4a36-8423-688a61929c08",
-		Moves:       make([]Coords, 0, len(children)),
+		Moves:       make([]models.Coords, 0, len(children)),
 		StackOfBags: make([][]int, 0),
 	}
 
 	for len(gifts) > 0 {
 		currx, curry := 0, 0
 		bag := Bag{
-			Gifts:  make([]Gift, 0),
+			Gifts:  make([]models.Gift, 0),
 			Weight: 0,
 			Volume: 0,
 		}
@@ -67,7 +70,7 @@ func Algo(children []Coords, gifts []Gift) Request {
 			count--
 		}
 		if len(gifts) != 0 {
-			zero := Coords{
+			zero := models.Coords{
 				X: 0,
 				Y: 0,
 			}
@@ -76,7 +79,7 @@ func Algo(children []Coords, gifts []Gift) Request {
 	}
 	return res
 }
-func Closest(children []Coords, x, y int) int {
+func Closest(children []models.Coords, x, y int) int {
 	cx, cy := children[0].X, children[0].Y
 	dist := Distance(cx, cy, x, y)
 	ans := 0
