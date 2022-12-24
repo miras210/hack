@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"hackathon/models"
 	solver2 "hackathon/solver"
-	"hackathon/solver/greedy-miras"
+	greedy_miras "hackathon/solver/greedy-miras"
 	"io"
 	"log"
 	"net/http"
@@ -36,6 +36,7 @@ func main() {
 	//CHANGEABLE BLOCK
 
 	solverImpl =
+		//&greedy_amiran.GreedyAmiranSolver{SnowAreas: input.SnowAreas}
 		&greedy_miras.GreedyMirasSolver{}
 
 	//
