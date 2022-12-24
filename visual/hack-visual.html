@@ -12,7 +12,6 @@
 
         }
     </style>
-    <script type="text/javascript" src="map.json"></script>
 </head>
 <body>
 <canvas id="mapCanvas">
@@ -41,8 +40,8 @@
     };
 
     function changeSize() {
-        canvas.width  = 1920;
-        canvas.height = 1080;
+        canvas.width  = 1000;
+        canvas.height = 1000;
 
         console.log(window.innerWidth + " " + window.innerHeight)
     }
@@ -59,17 +58,39 @@
             })
     }
 
+    class Gift {
+        constructor(weight, volume) {
+            this.weight = weight;
+            this.volume = volume;
+        }
+    }
+
     function drawMoves() {
         var ctx = canvas.getContext("2d");
 
         let moves = movesData.moves
 
         let bags = movesData.stackOfBags
+        let gifts = mapData.gifts
+
+        let giftMap = new Map()
+
+        for (let i = 0; i < gifts.length; i++) {
+            let g = gifts[i]
+            giftMap.set(g.id, new Gift(g.weight, g.volume))
+        }
 
         let sum = 0
 
         for (let i = 0; i < bags.length; i++) {
             sum += bags[i].length
+            let kruW = 0, kruV = 0;
+            for (let k = 0; k < bags[i].length; k++) {
+                let t = giftMap.get(bags[i][k])
+                kruW += t.weight
+                kruV += t.volume
+            }
+            console.log(i + ": w - " + kruW + " - v - " + kruV)
         }
 
         console.log("Sum: " + sum)
@@ -122,6 +143,8 @@
 
         let xMultiplier = canvas.width / (maxX - minX)
         let yMultiplier = canvas.height / (maxY - minY)
+
+
 
         mult = Math.min(xMultiplier, yMultiplier)
 
