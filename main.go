@@ -40,7 +40,7 @@ func main() {
 
 	//
 
-	request := solverImpl.Algo(input.Children, input.Gifts)
+	request := solverImpl.Algo(input.Children, input.Gifts, input.SnowAreas)
 
 	for i, j := 0, len(request.StackOfBags)-1; i < j; i, j = i+1, j-1 {
 		request.StackOfBags[i], request.StackOfBags[j] = request.StackOfBags[j], request.StackOfBags[i]
