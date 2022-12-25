@@ -48,7 +48,7 @@ func (b *Bag) AddMax(gifts []models.Gift) int {
 	return len(gifts)
 }
 
-func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
+func (g *GreedyAmiranSolver) Algos(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
 	res := models.Request{
 		MapID:       solver.MapID,
 		Moves:       make([]models.Coords, 0, len(children)),
@@ -86,6 +86,153 @@ func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift,
 	}
 	return res
 }
+
+func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
+	res := models.Request{
+		MapID:       solver.MapID,
+		Moves:       make([]models.Coords, 0, len(children)),
+		StackOfBags: make([][]int, 0),
+	}
+
+	// Create a map of special points from the snow areas
+	specialPoints := make(map[point]bool)
+	for _, snowArea := range snowAreas {
+		p := point{
+			x: float64(snowArea.X),
+			y: float64(snowArea.Y),
+		}
+		specialPoints[p] = true
+	}
+
+	for len(gifts) > 0 {
+		currx, curry := 0, 0
+		bag := Bag{
+			Gifts:  make([]models.Gift, 0),
+			Weight: 0,
+			Volume: 0,
+		}
+		i := bag.AddMax(gifts)
+		gifts = gifts[i:]
+
+		res.StackOfBags = append(res.StackOfBags, bag.Result())
+
+		count := len(bag.Gifts)
+		for count != 0 {
+			// Find the shortest path to the next child using Dijkstra's algorithm
+			path := g.Dijkstra(point{x: float64(currx), y: float64(curry)}, children, specialPoints)
+			// Add the moves to the result
+			for _, p := range path {
+				res.Moves = append(res.Moves, models.Coords{X: int(p.x), Y: int(p.y)})
+			}
+			// Update the current position
+			currx, curry = int(path[len(path)-1].x), int(path[len(path)-1].y)
+			// Remove the child from the list
+			idx := g.findChild(children, currx, curry)
+			children[idx] = children[len(children)-1]
+			children = children[:len(children)-1]
+			count--
+		}
+		if len(gifts) != 0 {
+			zero := models.Coords{
+				X: 0,
+				Y: 0,
+			}
+			res.Moves = append(res.Moves, zero)
+		}
+	}
+	return res
+}
+
+func (g *GreedyAmiranSolver) findChild(children []models.Coords, x, y int) int {
+	for i := 0; i < len(children); i++ {
+		if children[i].X == x && children[i].Y == y {
+			return i
+		}
+	}
+	return -1
+}
+
+func (g *GreedyAmiranSolver) Dijkstra(start point, children []models.Coords, specialPoints map[point]bool) []point {
+	graph := make(map[point]map[point]float64)
+
+	for _, child := range children {
+		childPoint := point{x: float64(child.X), y: float64(child.Y)}
+		graph[childPoint] = make(map[point]float64)
+		for p, isSnowy := range specialPoints {
+			distance := g.Distance(int(start.x), int(start.y), int(p.x), int(p.y))
+			if isSnowy {
+				distance *= distanceMultiplier
+			}
+			graph[childPoint][p] = distance
+		}
+	}
+
+	end := point{x: float64(children[0].X), y: float64(children[0].Y)}
+	return shortestPath(start, end, graph)
+}
+
+type vertex struct {
+	point
+	distance float64
+	prev     *vertex
+}
+
+func shortestPath(src, dest point, graph map[point]map[point]float64) []point {
+	// Set of unvisited vertices
+	unvisited := make(map[point]*vertex)
+
+	// Initialize all vertices with infinite distance from the source and no previous vertex
+	for p := range graph {
+		unvisited[p] = &vertex{
+			point:    p,
+			distance: math.Inf(1),
+			prev:     nil,
+		}
+	}
+
+	// Set the distance of the source vertex to 0
+	unvisited[src].distance = 0
+
+	// The current vertex being processed
+	var current *vertex
+
+	// Continue until all vertices have been visited
+	for len(unvisited) > 0 {
+		// Set the current vertex to the unvisited vertex with the smallest distance from the source
+		current = nil
+		for _, v := range unvisited {
+			if current == nil || v.distance < current.distance {
+				current = v
+			}
+		}
+
+		// If the destination has been reached, construct and return the shortest path
+		if current.point == dest {
+			path := make([]point, 0)
+			for current != nil {
+				path = append([]point{current.point}, path...)
+				current = current.prev
+			}
+			return path
+		}
+
+		// Remove the current vertex from the unvisited set
+		delete(unvisited, current.point)
+
+		// Update the distance of the neighbors of the current vertex
+		for neighbor, distance := range graph[current.point] {
+			newDistance := current.distance + distance
+			if unvisited[neighbor] != nil && newDistance < unvisited[neighbor].distance {
+				unvisited[neighbor].distance = newDistance
+				unvisited[neighbor].prev = current
+			}
+		}
+	}
+
+	// Return an empty path if the destination could not be reached
+	return []point{}
+}
+
 func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int) int {
 	cx, cy := children[0].X, children[0].Y
 	dist := g.Distance(cx, cy, x, y)
