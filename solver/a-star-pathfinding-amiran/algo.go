@@ -103,7 +103,15 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 			if !found {
 				res.Moves = append(res.Moves, zero)
 			} else {
-				res.Moves = append(res.Moves, pathToCoords(path)...)
+
+				mCoords := pathToCoords(path)
+				td := s.totalDistance(append([]models.Coords{{X: currx, Y: curry}}, mCoords...))
+				sd := s.Distance(currx, curry, zero.X, zero.Y)
+				if td < sd {
+					res.Moves = append(res.Moves, mCoords...)
+				} else {
+					res.Moves = append(res.Moves, zero)
+				}
 			}
 		}
 	}

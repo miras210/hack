@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"hackathon/models"
 	solver2 "hackathon/solver"
-	a_star_pathfinding_amiran "hackathon/solver/a-star-pathfinding-amiran"
+	tsp_amiran "hackathon/solver/tsp-amiran"
 	"io"
 	"log"
 	"net/http"
@@ -36,8 +36,9 @@ func main() {
 	//CHANGEABLE BLOCK
 
 	solverImpl =
-		&a_star_pathfinding_amiran.AStarPathfindingSolver{}
+		//&a_star_pathfinding_amiran.AStarPathfindingSolver{}
 		//&greedy_amiran.GreedyAmiranSolver{SnowAreas: input.SnowAreas}
+		&tsp_amiran.TSPAmiranSolver{}
 		//&greedy_miras.GreedyMirasSolver{}
 
 	//

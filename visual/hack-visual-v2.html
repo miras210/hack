@@ -25,7 +25,7 @@
 </div>
 
 <script>
-    const sizePixel = 1300
+    const sizePixel = 1300, movesMin = 0, movesMax = 20000
     let canvas = document.getElementById("mapCanvas");
     let sizeCoefficient = 1
     const dotSize = 6
@@ -93,7 +93,7 @@
         ctx.strokeStyle = "#ffffff" //path color
         ctx.lineWidth = 1
         var posX = 0, posY = 0
-        for (let i = 0; i < moves.length; i++) {
+        for (let i = movesMin; i < moves.length && i < movesMax; i++) {
             let mv = moves[i]
             ctx.moveTo(posX,posY);
             posX = mv.x * sizeCoefficient

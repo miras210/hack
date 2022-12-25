@@ -75,7 +75,8 @@ func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift,
 		//children, subset = g.GetClosestSubsetToOrigin(children, count)
 
 		for count != 0 {
-			idx := g.Closest(children, currx, curry)
+			backtrack := count <= len(bag.Gifts)/2
+			idx := g.Closest(children, currx, curry, backtrack)
 			currx, curry = children[idx].X, children[idx].Y
 			res.Moves = append(res.Moves, children[idx])
 			children[idx] = children[len(children)-1]
@@ -146,16 +147,65 @@ func (g *GreedyAmiranSolver) GetClosestSubsetToOrigin(children []models.Coords, 
 	return
 }
 
-func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int) int {
-	cx, cy := children[0].X, children[0].Y
-	dist := g.Distance(cx, cy, x, y)
+func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int, backtrack bool) int {
+	zero := models.Coords{
+		X: 0,
+		Y: 0,
+	}
+	currDis := g.Distance(x, y, zero.X, zero.Y)
 	ans := 0
-	for i := 1; i < len(children); i++ {
-		cx, cy = children[i].X, children[i].Y
-		newDist := g.Distance(cx, cy, x, y)
-		if newDist < dist {
-			dist = newDist
-			ans = i
+	found := false
+
+	var candidates []coordPair
+
+	for i := 0; i < len(children); i++ {
+		ch := children[i]
+		chDis := g.Distance(ch.X, ch.Y, zero.X, zero.Y)
+		if backtrack {
+			if chDis <= currDis {
+				candidates = append(candidates, coordPair{
+					idx:      i,
+					coord:    ch,
+					distance: chDis,
+				})
+				found = true
+			}
+		} else {
+			if chDis > currDis {
+				candidates = append(candidates, coordPair{
+					idx:      i,
+					coord:    ch,
+					distance: chDis,
+				})
+				found = true
+			}
+		}
+	}
+
+	if !found {
+		cx, cy := children[0].X, children[0].Y
+		dist := g.Distance(cx, cy, x, y)
+		for i := 1; i < len(children); i++ {
+			cx, cy = children[i].X, children[i].Y
+			newDist := g.Distance(cx, cy, x, y)
+			if newDist < dist {
+				dist = newDist
+				ans = i
+			}
+		}
+	} else if len(candidates) > 0 {
+		candi := candidates[0]
+		point := candi.coord
+		ans = candi.idx
+		candidateMinDis := g.Distance(point.X, point.Y, x, y)
+		for i := 1; i < len(candidates); i++ {
+			candi := candidates[i]
+			point := candi.coord
+			newDist := g.Distance(point.X, point.Y, x, y)
+			if newDist < candidateMinDis {
+				candidateMinDis = newDist
+				ans = candi.idx
+			}
 		}
 	}
 	return ans
