@@ -46,8 +46,8 @@
         console.log(window.innerWidth + " " + window.innerHeight)
     }
 
-    function readMoves() {
-        fetch("./moves.json")
+    async function readMoves() {
+        await fetch("./moves.json")
             .then(function (response) {
                 return response.json();
             })
@@ -112,7 +112,7 @@
 
             ctx.strokeStyle = "#0f32e0"
 
-            ctx.fillRect(posX, posY,5,5);
+            // ctx.fillRect(posX, posY,5,5);
         }
     }
 
@@ -145,6 +145,8 @@
         let yMultiplier = canvas.height / (maxY - minY)
 
 
+        readMoves();
+
 
         mult = Math.min(xMultiplier, yMultiplier)
 
@@ -154,7 +156,7 @@
 
         for (let i = 0; i < children.length; i++) {
             let ch = children[i]
-            ctx.fillRect(ch.x * mult, ch.y * mult,3,3);
+            ctx.fillRect(ch.x * mult, ch.y * mult,4,4);
         }
         ctx.strokeStyle = '#1237be';
         for (let i = 0; i < snows.length; i++) {
@@ -167,7 +169,6 @@
             ctx.stroke();
         }
 
-        readMoves();
 
 
     }

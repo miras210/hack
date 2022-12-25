@@ -59,7 +59,6 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 
 	s.world = ParseWorld(NewWorld(children, snowAreas))
 	s.SnowAreas = snowAreas
-	fmt.Println(res)
 
 	for len(gifts) > 0 {
 		currx, curry := 0, 0
@@ -76,8 +75,18 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 		count := len(bag.Gifts)
 		for count != 0 {
 			idx, moves := s.Closest(children, currx, curry)
+
+			totalD := s.totalDistance(append([]models.Coords{{X: currx, Y: curry}}, moves...))
+			straightD := s.Distance(currx, curry, children[idx].X, children[idx].Y)
+
+			if totalD < straightD {
+				res.Moves = append(res.Moves, moves...)
+			} else {
+				res.Moves = append(res.Moves, children[idx])
+			}
+
 			currx, curry = children[idx].X, children[idx].Y
-			res.Moves = append(res.Moves, moves...)
+
 			children[idx] = children[len(children)-1]
 			children = children[:len(children)-1]
 			count--
@@ -99,6 +108,15 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 		}
 	}
 	return res
+}
+
+func (s *AStarPathfindingSolver) totalDistance(moves []models.Coords) float64 {
+	var sum float64
+	sum = 0
+	for i := 0; i < len(moves)-1; i++ {
+		sum += s.Distance(moves[i].X, moves[i].Y, moves[i+1].X, moves[i+1].Y)
+	}
+	return sum
 }
 
 func (s *AStarPathfindingSolver) Closest(children []models.Coords, x, y int) (int, []models.Coords) {
