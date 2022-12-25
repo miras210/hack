@@ -1,9 +1,11 @@
 package greedy_amiran
 
 import (
+	"fmt"
 	"hackathon/models"
 	"hackathon/solver"
 	"math"
+	"sort"
 )
 
 const distanceMultiplier = 7
@@ -68,6 +70,10 @@ func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift,
 		res.StackOfBags = append(res.StackOfBags, bag.Result())
 
 		count := len(bag.Gifts)
+
+		//var subset []models.Coords
+		//children, subset = g.GetClosestSubsetToOrigin(children, count)
+
 		for count != 0 {
 			idx := g.Closest(children, currx, curry)
 			currx, curry = children[idx].X, children[idx].Y
@@ -86,6 +92,60 @@ func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift,
 	}
 	return res
 }
+
+type coordPair struct {
+	idx      int
+	coord    models.Coords
+	distance float64
+}
+
+func (g *GreedyAmiranSolver) GetClosestSubsetToOrigin(children []models.Coords, amountToExtract int) (childrenFiltered []models.Coords,
+	subset []models.Coords) {
+	var coordPairs []coordPair
+
+	zero := models.Coords{
+		X: 0,
+		Y: 0,
+	}
+
+	for i := 0; i < len(children); i++ {
+		ch := children[i]
+		distance := g.Distance(zero.X, zero.Y, ch.X, ch.Y)
+		coordPairs = append(coordPairs, coordPair{
+			idx:      i,
+			coord:    ch,
+			distance: distance,
+		})
+	}
+
+	sort.SliceStable(coordPairs, func(i, j int) bool {
+		return coordPairs[i].distance < coordPairs[j].distance
+	})
+
+	coordPairs = coordPairs[:amountToExtract]
+
+	var filteredCoords []models.Coords
+
+	for i := 0; i < len(coordPairs); i++ {
+		cp := coordPairs[i]
+		children = removeFromSlice(children, cp.idx)
+		for k := 0; k < len(coordPairs); k++ {
+			if coordPairs[k].idx > cp.idx {
+				coordPairs[k].idx--
+			}
+
+		}
+		filteredCoords = append(filteredCoords, cp.coord)
+	}
+
+	childrenFiltered = children
+	subset = filteredCoords
+
+	fmt.Println("Subset created")
+
+	return
+}
+
 func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int) int {
 	cx, cy := children[0].X, children[0].Y
 	dist := g.Distance(cx, cy, x, y)
@@ -99,6 +159,10 @@ func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int) int {
 		}
 	}
 	return ans
+}
+
+func removeFromSlice(slice []models.Coords, idx int) []models.Coords {
+	return append(slice[:idx], slice[idx+1:]...)
 }
 
 func sq(x float64) float64 { return x * x }
