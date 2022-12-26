@@ -96,5 +96,4 @@ func main() {
 	if err2 != nil {
 		log.Fatal(err2)
 	}
-
 }
