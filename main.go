@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"hackathon/models"
 	solver2 "hackathon/solver"
-	greedy_miras "hackathon/solver/greedy-miras"
+	a_star_pathfinding_amiran "hackathon/solver/a-star-pathfinding-amiran"
 	"io"
 	"log"
 	"net/http"
@@ -36,9 +36,11 @@ func main() {
 	//CHANGEABLE BLOCK
 
 	solverImpl =
-		//&a_star_pathfinding_amiran.AStarPathfindingSolver{}
+		&a_star_pathfinding_amiran.AStarPathfindingSolver{}
 		//&greedy_amiran.GreedyAmiranSolver{SnowAreas: input.SnowAreas}
-		&greedy_miras.GreedyMirasSolver{}
+		//&greedy_amiran_2.NewGreedyAmiranSolver{}
+		//&tsp_amiran.TSPAmiranSolver{}
+		//&greedy_miras.GreedyMirasSolver{}
 
 	//
 
@@ -94,5 +96,4 @@ func main() {
 	if err2 != nil {
 		log.Fatal(err2)
 	}
-
 }

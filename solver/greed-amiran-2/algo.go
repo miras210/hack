@@ -1,4 +1,4 @@
-package greedy_amiran
+package greedy_amiran_2
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 const distanceMultiplier = 7
 
-type GreedyAmiranSolver struct {
+type NewGreedyAmiranSolver struct {
 	SnowAreas []models.SnowArea
 }
 
@@ -50,11 +50,21 @@ func (b *Bag) AddMax(gifts []models.Gift) int {
 	return len(gifts)
 }
 
-func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
+func (g *NewGreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, snowAreas []models.SnowArea) models.Request {
 	res := models.Request{
 		MapID:       solver.MapID,
 		Moves:       make([]models.Coords, 0, len(children)),
 		StackOfBags: make([][]int, 0),
+	}
+
+	g.SnowAreas = snowAreas
+
+	sort.SliceStable(gifts, func(i, j int) bool {
+		return gifts[i].Weight+gifts[i].Volume <= gifts[j].Weight+gifts[j].Volume
+	})
+
+	for i, j := 0, len(gifts)-1; i < j; i, j = i+1, j-1 {
+		gifts[i], gifts[j] = gifts[j], gifts[i]
 	}
 
 	for len(gifts) > 0 {
@@ -75,8 +85,7 @@ func (g *GreedyAmiranSolver) Algo(children []models.Coords, gifts []models.Gift,
 		//children, subset = g.GetClosestSubsetToOrigin(children, count)
 
 		for count != 0 {
-			backtrack := count <= len(bag.Gifts)/2
-			idx := g.Closest(children, currx, curry, backtrack)
+			idx := g.Closest(children, currx, curry)
 			currx, curry = children[idx].X, children[idx].Y
 			res.Moves = append(res.Moves, children[idx])
 			children[idx] = children[len(children)-1]
@@ -100,7 +109,7 @@ type coordPair struct {
 	distance float64
 }
 
-func (g *GreedyAmiranSolver) GetClosestSubsetToOrigin(children []models.Coords, amountToExtract int) (childrenFiltered []models.Coords,
+func (g *NewGreedyAmiranSolver) GetClosestSubsetToOrigin(children []models.Coords, amountToExtract int) (childrenFiltered []models.Coords,
 	subset []models.Coords) {
 	var coordPairs []coordPair
 
@@ -147,65 +156,16 @@ func (g *GreedyAmiranSolver) GetClosestSubsetToOrigin(children []models.Coords, 
 	return
 }
 
-func (g *GreedyAmiranSolver) Closest(children []models.Coords, x, y int, backtrack bool) int {
-	zero := models.Coords{
-		X: 0,
-		Y: 0,
-	}
-	currDis := g.Distance(x, y, zero.X, zero.Y)
+func (g *NewGreedyAmiranSolver) Closest(children []models.Coords, x, y int) int {
+	cx, cy := children[0].X, children[0].Y
+	dist := g.Distance(cx, cy, x, y)
 	ans := 0
-	found := false
-
-	var candidates []coordPair
-
-	for i := 0; i < len(children); i++ {
-		ch := children[i]
-		chDis := g.Distance(ch.X, ch.Y, zero.X, zero.Y)
-		if backtrack {
-			if chDis <= currDis {
-				candidates = append(candidates, coordPair{
-					idx:      i,
-					coord:    ch,
-					distance: chDis,
-				})
-				found = true
-			}
-		} else {
-			if chDis > currDis {
-				candidates = append(candidates, coordPair{
-					idx:      i,
-					coord:    ch,
-					distance: chDis,
-				})
-				found = true
-			}
-		}
-	}
-
-	if !found {
-		cx, cy := children[0].X, children[0].Y
-		dist := g.Distance(cx, cy, x, y)
-		for i := 1; i < len(children); i++ {
-			cx, cy = children[i].X, children[i].Y
-			newDist := g.Distance(cx, cy, x, y)
-			if newDist < dist {
-				dist = newDist
-				ans = i
-			}
-		}
-	} else if len(candidates) > 0 {
-		candi := candidates[0]
-		point := candi.coord
-		ans = candi.idx
-		candidateMinDis := g.Distance(point.X, point.Y, x, y)
-		for i := 1; i < len(candidates); i++ {
-			candi := candidates[i]
-			point := candi.coord
-			newDist := g.Distance(point.X, point.Y, x, y)
-			if newDist < candidateMinDis {
-				candidateMinDis = newDist
-				ans = candi.idx
-			}
+	for i := 1; i < len(children); i++ {
+		cx, cy = children[i].X, children[i].Y
+		newDist := g.Distance(cx, cy, x, y)
+		if newDist < dist {
+			dist = newDist
+			ans = i
 		}
 	}
 	return ans
@@ -222,7 +182,7 @@ type specialPoint struct {
 	isSnowy bool
 }
 
-func (g *GreedyAmiranSolver) Distance(x1, y1, x2, y2 int) float64 {
+func (g *NewGreedyAmiranSolver) Distance(x1, y1, x2, y2 int) float64 {
 	startPoint := point{
 		x: float64(x1),
 		y: float64(y1),

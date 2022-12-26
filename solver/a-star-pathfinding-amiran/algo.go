@@ -7,6 +7,7 @@ import (
 	"hackathon/solver"
 	"log"
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -60,6 +61,14 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 	s.world = ParseWorld(NewWorld(children, snowAreas))
 	s.SnowAreas = snowAreas
 
+	sort.SliceStable(gifts, func(i, j int) bool {
+		return gifts[i].Weight+gifts[i].Volume <= gifts[j].Weight+gifts[j].Volume
+	})
+
+	for i, j := 0, len(gifts)-1; i < j; i, j = i+1, j-1 {
+		gifts[i], gifts[j] = gifts[j], gifts[i]
+	}
+
 	for len(gifts) > 0 {
 		currx, curry := 0, 0
 		bag := Bag{
@@ -103,7 +112,15 @@ func (s *AStarPathfindingSolver) Algo(children []models.Coords, gifts []models.G
 			if !found {
 				res.Moves = append(res.Moves, zero)
 			} else {
-				res.Moves = append(res.Moves, pathToCoords(path)...)
+
+				mCoords := pathToCoords(path)
+				td := s.totalDistance(append([]models.Coords{{X: currx, Y: curry}}, mCoords...))
+				sd := s.Distance(currx, curry, zero.X, zero.Y)
+				if td < sd {
+					res.Moves = append(res.Moves, mCoords...)
+				} else {
+					res.Moves = append(res.Moves, zero)
+				}
 			}
 		}
 	}
@@ -139,15 +156,26 @@ func (s *AStarPathfindingSolver) Closest(children []models.Coords, x, y int) (in
 			}
 		}
 		winnerChild := children[ans]
-		path, distance, found := astar.Path(
+		path, _, found := astar.Path(
 			s.world.Tile(x, y),
 			s.world.Tile(winnerChild.X, winnerChild.Y))
 		if !found {
 			log.Fatal("Something went terribly wrong")
 		}
-		if distance <= dist {
-			return ans, pathToCoords(path)
+
+		reworkedPath := pathToCoords(path)
+		var reworkedDis float64 = 0
+		prev := models.Coords{X: x, Y: y}
+		for sn := 0; sn < len(reworkedPath); sn++ {
+			tar := reworkedPath[sn]
+			reworkedDis += s.Distance(prev.X, prev.Y, tar.X, tar.Y)
+			prev = tar
+		}
+
+		if reworkedDis <= dist {
+			return ans, reworkedPath
 		} else {
+			return ans, []models.Coords{winnerChild}
 			children[ans] = children[len(children)-1]
 			children = children[:len(children)-1]
 			ans = 0
@@ -233,7 +261,7 @@ var KindRunes = map[int]rune{
 // RuneKinds map input runes to tile kinds.
 var RuneKinds = map[rune]int{
 	'.': KindPlain,
-	'❆': KindSnow,
+	'*': KindSnow,
 	'F': KindFrom,
 	'T': KindTo,
 }

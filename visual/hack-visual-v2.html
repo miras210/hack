@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phase 1 Visualization v2</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+        #mapCanvas {
+            border: 1px black solid;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <canvas id="mapCanvas">
+
+    </canvas>
+</div>
+
+<script>
+    const sizePixel = 1300, movesMin = 0, movesMax = 20000
+    let canvas = document.getElementById("mapCanvas");
+    let sizeCoefficient = 1
+    const dotSize = 6
+    var mapData = null, movesData = null
+    let iterNumber = 0
+
+    resize()
+
+    loadData()
+
+    function resize() {
+        canvas.height = sizePixel
+        canvas.width = sizePixel
+    }
+
+    async function loadData() {
+        await fetch("./map.json")
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                console.log(data);
+                mapData = data
+            })
+        await fetch("./moves.json")
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
+                console.log(data);
+                movesData = data
+            })
+
+        sizeCoefficient = sizePixel / 10000
+        iterNumber = getNumberOfIterations()
+        console.log(iterNumber)
+        draw(true)
+    }
+
+    function draw(everything) {
+        const context = canvas.getContext('2d');
+        let ctx = context
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (everything) {
+            drawEverything(ctx)
+        }
+    }
+
+    function drawEverything(ctx) {
+        let snows = mapData.snowAreas
+        let moves = movesData.moves
+        let children = mapData.children
+        ctx.strokeStyle = "#26d0cd" //snow color
+        ctx.lineWidth = 3
+        for (let i = 0; i < snows.length; i++) {
+            let s = snows[i]
+            ctx.beginPath();
+            ctx.arc(s.x * sizeCoefficient, s.y * sizeCoefficient, s.r * sizeCoefficient, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        ctx.strokeStyle = "#ffffff" //path color
+        ctx.lineWidth = 1
+        var posX = 0, posY = 0
+        for (let i = movesMin; i < moves.length && i < movesMax; i++) {
+            let mv = moves[i]
+            ctx.moveTo(posX,posY);
+            posX = mv.x * sizeCoefficient
+            posY = mv.y * sizeCoefficient
+            ctx.lineTo(posX,posY);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = "#ff0000" //children color
+        for (let i = 0; i < children.length; i++) {
+            let ch = children[i]
+            ctx.fillRect(ch.x * sizeCoefficient - (dotSize/2), ch.y * sizeCoefficient - dotSize/2,dotSize,dotSize);
+        }
+    }
+
+    function isZeroValue(vector) {
+        return vector.x === 0 && vector.y === 0
+    }
+
+    function getNumberOfIterations() {
+        let moves = movesData.moves
+
+        const hasLastZero = isZeroValue(moves.at(-1))
+
+        let zeroes = moves.filter(isZeroValue)
+
+        let ans = zeroes.length
+        if (hasLastZero) ans--
+        return ans + 1
+    }
+</script>
+</body>
+</html>
