@@ -4,6 +4,7 @@ import (
 	"hackathon/models"
 	"hackathon/solver"
 	"math"
+	"sort"
 )
 
 type TSPAmiranSolver struct {
@@ -53,6 +54,14 @@ func (g *TSPAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, sn
 
 	g.SnowAreas = snowAreas
 
+	sort.SliceStable(gifts, func(i, j int) bool {
+		return gifts[i].Weight+gifts[i].Volume <= gifts[j].Weight+gifts[j].Volume
+	})
+
+	for i, j := 0, len(gifts)-1; i < j; i, j = i+1, j-1 {
+		gifts[i], gifts[j] = gifts[j], gifts[i]
+	}
+
 	for len(gifts) > 0 {
 		currx, curry := 0, 0
 		bag := Bag{
@@ -62,7 +71,6 @@ func (g *TSPAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, sn
 		}
 		i := bag.AddMax(gifts)
 		gifts = gifts[i:]
-
 		res.StackOfBags = append(res.StackOfBags, bag.Result())
 
 		count := len(bag.Gifts)
@@ -92,7 +100,7 @@ func (g *TSPAmiranSolver) Algo(children []models.Coords, gifts []models.Gift, sn
 }
 func (g *TSPAmiranSolver) Closest(children []models.Coords, x, y int) int {
 	cx, cy := children[0].X, children[0].Y
-	dist := Distance(cx, cy, x, y)
+	dist := g.Distance(cx, cy, x, y)
 	ans := 0
 	for i := 1; i < len(children); i++ {
 		cx, cy = children[i].X, children[i].Y
